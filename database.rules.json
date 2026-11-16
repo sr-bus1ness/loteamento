@@ -1,0 +1,94 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "meta": {
+      ".read": "auth != null",
+      "adminCriado": {
+        ".write": "auth != null && !data.exists() && newData.val() === auth.uid && newData.parent().parent().child('usuarios').child(auth.uid).child('papel').val() === 'admin'"
+      }
+    },
+
+    "usuarios": {
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val() === 'admin'",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && ((root.child('usuarios').child(auth.uid).child('papel').val() === 'admin' && auth.uid !== $uid) || (auth.uid === $uid && !data.exists() && (newData.child('papel').val() === 'pendente' || (newData.child('papel').val() === 'admin' && !root.child('meta/adminCriado').exists() && newData.parent().parent().child('meta/adminCriado').val() === auth.uid))))",
+        ".validate": "newData.hasChildren(['email', 'papel'])",
+        "papel": { ".validate": "newData.isString() && newData.val().matches(/^(admin|operador|leitura|pendente|bloqueado)$/)" },
+        "email": { ".validate": "newData.isString() && newData.val().length < 200" },
+        "nome": { ".validate": "newData.isString() && newData.val().length < 200" }
+      }
+    },
+
+    "config": {
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val().matches(/^(admin|operador|leitura)$/)",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val() === 'admin'",
+      "empresa": { "logo": { ".validate": "newData.isString() && newData.val().length < 300000" } }
+    },
+
+    "empreendimentos": {
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val().matches(/^(admin|operador|leitura)$/)",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val() === 'admin'"
+    },
+
+    "lotes": {
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val().matches(/^(admin|operador|leitura)$/)",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val() === 'admin'",
+      ".indexOn": ["emp", "status"],
+      "$lote": {
+        ".write": "auth != null && (root.child('usuarios').child(auth.uid).child('papel').val() === 'admin' || (root.child('usuarios').child(auth.uid).child('papel').val() === 'operador' && newData.exists()))",
+        ".validate": "newData.hasChildren(['emp', 'quadra', 'numero', 'status'])",
+        "status": { ".validate": "newData.val().matches(/^(disponivel|vendido|reservado|bloqueado)$/)" },
+        "numero": { ".validate": "newData.isNumber() && newData.val() > 0" },
+        "valorTotal": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "entrada": { ".validate": "newData.isNumber() && newData.val() >= 0" }
+      }
+    },
+
+    "compradores": {
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val().matches(/^(admin|operador|leitura)$/)",
+      "$id": {
+        ".write": "auth != null && (root.child('usuarios').child(auth.uid).child('papel').val() === 'admin' || (root.child('usuarios').child(auth.uid).child('papel').val() === 'operador' && newData.exists()))",
+        ".validate": "newData.hasChild('nome')"
+      }
+    },
+
+    "vendas": {
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val().matches(/^(admin|operador|leitura)$/)",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val() === 'admin'",
+      "$id": {
+        ".write": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val() === 'operador' && newData.exists() && newData.child('status').val() !== 'cancelada'",
+        ".validate": "newData.hasChildren(['loteId', 'compradorId', 'valorTotal', 'status'])"
+      }
+    },
+
+    "parcelas": {
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val().matches(/^(admin|operador|leitura)$/)",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val() === 'admin'",
+      "$venda": {
+        ".write": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val() === 'operador' && newData.exists()"
+      }
+    },
+
+    "pagamentos": {
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val().matches(/^(admin|operador|leitura)$/)",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val() === 'admin'",
+      "$id": {
+        ".write": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val() === 'operador' && !data.exists() && newData.exists()",
+        ".validate": "newData.hasChildren(['vendaId', 'valor', 'data'])"
+      }
+    },
+
+    "historico": {
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val().matches(/^(admin|operador|leitura)$/)",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val() === 'admin' && newData.exists()",
+      ".indexOn": ["ts", "loteId"],
+      "$id": {
+        ".write": "auth != null && root.child('usuarios').child(auth.uid).child('papel').val().matches(/^(admin|operador)$/) && !data.exists() && newData.exists()",
+        ".validate": "newData.hasChildren(['ts', 'desc'])"
+      }
+    }
+  }
+}
