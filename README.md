@@ -17,24 +17,26 @@ Toda a estrutura de quadras e lotes foi extraída das plantas oficiais fornecida
   com os quadros "Detalhamento das Quadras" das duas plantas.
 - Na Esperança I o quadro de áreas cita 386 lotes; o detalhamento por quadra soma 398 (inclui a Quadra O, acrescentada
   na revisão 02). O sistema usa **398**.
-- As plantas não contêm preços, compradores ou parcelas. Todos os lotes começam como **Disponível** e sem valores;
-  preços (individuais ou em massa, fixo ou por m²) e vendas são cadastrados no próprio sistema.
-- Os scripts usados na extração estão em `tools/extracao/` (Python: PyMuPDF, OpenCV, RapidOCR).
+- As ruas do mapa (`data/mapa.json`) foram extraídas das faixas cinza das plantas com `tools/extracao/ruas.py`.
+- Os preços vêm das tabelas "TABELA ATUALIZADA 2026" (Esperança 1 de 13/01/2026 e Esperança 2 de 12/01/2026) e estão em
+  `data/precos.json`. Plano: entrada de 5% + 200 parcelas; valor total = 200 × parcela. Quando a observação da tabela
+  citava um lote diferente da cor da célula, valeu a cor (E1: C-04, H-21, M-19, M-26; E2: C-34 no grupo roxo).
+- Os scripts usados na extração estão em `tools/extracao/` (Python: PyMuPDF, OpenCV, RapidOCR, Shapely).
 
-## Funcionalidades
+## Funcionalidades (versão de consulta para o corretor, pensada para tablet)
 
-- **Painel**: logomarca e dados da empresa, total de lotes, disponíveis/vendidos/reservados/bloqueados com percentuais,
-  total vendido, total recebido, pendente, em atraso, lotes por quadra e compradores em atraso.
-- **Mapa interativo** sobre a planta real: zoom com dois dedos, roda do mouse e botões; arrastar; tocar no lote para ver
-  quadra, número, área, valor total, entrada, nº e valor das parcelas, comprador e status; busca por `A-12`, `12`,
-  `quadra B` ou nome/CPF do comprador; filtro por status. Cores: verde (disponível), vermelho (vendido), amarelo (reservado), cinza (bloqueado).
-- **Lotes**: visão por quadra e em tabela, filtros, cadastro/edição/exclusão, alteração de status (reserva com
-  comprador e validade, bloqueio com motivo), definição de condições de venda em massa, exportação CSV.
-- **Compradores**: cadastro, busca, compras e histórico financeiro de cada comprador.
-- **Financeiro**: registro de vendas (entrada + parcelas mensais com vencimentos), recebimentos, estorno, alteração de
-  parcela, cancelamento de venda, parcelas a receber/atrasadas, recebimentos por período e forma, extrato para impressão, CSV.
+- **Mapa** em fundo escuro, só com ruas, quadras e a letra de cada quadra. Toque numa quadra para aproximar; toque num
+  lote para ver área, valor total, entrada e parcelas; toque fora do lote fecha os dados; toque fora de novo volta à
+  visão geral. Também dá para arrastar e usar dois dedos para zoom. Cores: verde (disponível), amarelo (reservado),
+  vermelho (vendido), cinza (indisponível = fora da tabela de preços).
+- O **administrador** pode mudar o status de um lote no próprio painel do lote (ou voltar ao padrão da tabela).
 - **Histórico** de todas as alterações (quem, quando, o quê).
 - **Configurações**: dados e logomarca da empresa, usuários e níveis de acesso, backup/restauração em JSON.
+
+### Atualizar a tabela de preços
+
+Edite `data/precos.json`: em cada quadra, `lotes` são os lotes à venda, `parcela` é o valor padrão e `excecoes` são os
+lotes com outra parcela (e `entrada` quando a entrada é um valor fixo). Lotes que não aparecem ficam Indisponíveis.
 
 ## 1. Configurar o Firebase (plano gratuito Spark)
 
@@ -87,11 +89,13 @@ css/app.css              estilos (responsivo; cores de status em :root)
 js/firebase-config.js    credenciais do projeto Firebase
 js/store.js              acesso a dados: Firebase (Auth + Realtime Database) ou modo local
 js/state.js              estado sincronizado e permissões
-js/ops.js                regras de negócio (vendas, parcelas, pagamentos, status) com gravação atômica + histórico
-js/forms.js              formulários e modais compartilhados
-js/views/*.js            telas: painel, mapa, lotes, compradores, financeiro, historico, config
+js/ops.js                alteração de status com gravação atômica + histórico
+js/precos.js             preços da tabela e status efetivo de cada lote
+js/views/*.js            telas: mapa, historico, config
 data/loteamentos.json    lotes extraídos das plantas (quadra, número, área, contorno no mapa)
-img/esperanca*.jpg       plantas renderizadas usadas como fundo do mapa
+data/mapa.json           ruas e contorno/letra de cada quadra
+data/precos.json         tabelas de preço 2026
+img/esperanca*.jpg       plantas renderizadas (usadas só pelos scripts de extração)
 database.rules.json      regras de segurança do Realtime Database
 tools/extracao/          scripts usados para extrair os dados das plantas
 ```

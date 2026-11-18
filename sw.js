@@ -1,10 +1,9 @@
 // Service worker: permite instalar o app e abrir a interface sem internet.
 // Os dados vêm do Firebase; arquivos do app usam "rede primeiro, cache depois".
-const CACHE = 'loteamentos-v1';
-const CORE = ['./', 'index.html', 'css/app.css', 'js/app.js', 'js/store.js', 'js/state.js', 'js/util.js', 'js/ops.js', 'js/forms.js',
-  'js/firebase-config.js', 'js/views/painel.js', 'js/views/mapa.js', 'js/views/lotes.js', 'js/views/compradores.js',
-  'js/views/financeiro.js', 'js/views/historico.js', 'js/views/config.js', 'data/loteamentos.json',
-  'img/esperanca1.jpg', 'img/esperanca2.jpg', 'img/icon.svg', 'manifest.webmanifest'];
+const CACHE = 'loteamentos-v2';
+const CORE = ['./', 'index.html', 'css/app.css', 'js/app.js', 'js/store.js', 'js/state.js', 'js/util.js', 'js/ops.js', 'js/precos.js',
+  'js/firebase-config.js', 'js/views/mapa.js', 'js/views/historico.js', 'js/views/config.js',
+  'data/loteamentos.json', 'data/mapa.json', 'data/precos.json', 'img/icon.svg', 'manifest.webmanifest'];
 
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {
